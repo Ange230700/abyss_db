@@ -1,5 +1,7 @@
-# abyss_db\.husky\pre-push
-
+# abyss_db/.husky/pre-push
 set -e
-echo "🧪 running tests before push…"
-npm run test
+echo "🐬 Ensuring MySQL is up…"
+docker compose up -d mysql
+node scripts/wait-for-mysql.mjs
+echo "🧪 running tests…"
+dotenv -e .env.test -- npm test --silent
