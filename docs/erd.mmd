@@ -1,0 +1,58 @@
+%% abyss_db\docs\erd.mmd
+
+erDiagram
+  user ||--o{ favorite : "has"
+  furniture ||--o{ favorite : "has"
+  furniture ||--o{ image : "has"
+  furniture ||--o{ furniturematerial : "has"
+  furnituretype ||--o{ furniture : "classifies"
+  material ||--o{ furniturematerial : "in"
+  user {
+    int id PK
+    string user_name
+    string email
+    string password
+    role Role
+    datetime deleted_at
+  }
+  furniture {
+    int id PK
+    string name
+    string description
+    int id_type FK
+    string size
+    string colour
+    int quantity
+    float price
+    status status
+    datetime deleted_at
+  }
+  furnituretype {
+    int id PK
+    string name UNIQUE
+    datetime deleted_at
+  }
+  material {
+    int id PK
+    string name UNIQUE
+    datetime deleted_at
+  }
+  furniturematerial {
+    int id PK
+    int id_furniture FK
+    int id_material FK
+    datetime deleted_at
+  }
+  favorite {
+    int id PK
+    int id_furniture FK
+    int id_user FK
+    boolean is_favorite
+    datetime deleted_at
+  }
+  image {
+    int id PK
+    int id_furniture FK
+    string url
+    datetime deleted_at
+  }

@@ -1,0 +1,5 @@
+# abyss_db\.husky\pre-push
+
+set -e
+echo "🧪 running tests before push…"
+npm run test

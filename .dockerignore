@@ -1,0 +1,9 @@
+# abyss_db\.dockerignore
+
+node_modules
+dist
+.nyc_output
+coverage
+.eslintcache
+**/.prisma
+.git

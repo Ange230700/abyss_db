@@ -1,0 +1,131 @@
+// abyss_db\prisma\schema.prisma
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "./generated/client"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x", "darwin-arm64", "darwin"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================
+// Prisma Schema
+// =====================
+
+model user {
+  id         Int        @id @default(autoincrement())
+  user_name  String
+  email      String     @unique
+  password   String
+  role       Role
+  favorites  favorite[]
+  deleted_at DateTime?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  @@index([role])
+}
+
+model favorite {
+  id           Int     @id @default(autoincrement())
+  id_furniture Int
+  id_user      Int
+  is_favorite  Boolean
+
+  // Relations
+  furniture furniture @relation(fields: [id_furniture], references: [id], onDelete: Cascade)
+  user      user      @relation(fields: [id_user], references: [id], onDelete: Cascade)
+
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model furniture {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String
+  id_type     Int
+  size        String
+  colour      String
+  quantity    Int
+  price       Float
+  status      Status
+
+  // Relations
+  type      furnituretype       @relation(fields: [id_type], references: [id], onDelete: Cascade)
+  favorites favorite[]
+  images    image[]
+  materials furniturematerial[]
+
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model furnituretype {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  furnitures furniture[]
+  deleted_at DateTime?
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+}
+
+model furniturematerial {
+  id           Int @id @default(autoincrement())
+  id_furniture Int
+  id_material  Int
+
+  // Relations
+  furniture furniture @relation(fields: [id_furniture], references: [id], onDelete: Cascade)
+  material  material  @relation(fields: [id_material], references: [id], onDelete: Cascade)
+
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@unique([id_furniture, id_material])
+}
+
+model material {
+  id                 Int                 @id @default(autoincrement())
+  name               String              @unique
+  furnitureMaterials furniturematerial[]
+  deleted_at         DateTime?
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+}
+
+model image {
+  id           Int       @id @default(autoincrement())
+  id_furniture Int
+  url          String
+  furniture    furniture @relation(fields: [id_furniture], references: [id], onDelete: Cascade)
+  deleted_at   DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  @@index([id_furniture])
+  @@index([url])
+}
+
+// ==============
+// Enums
+// ==============
+enum Role {
+  admin
+  visitor
+  customer
+  seller
+}
+
+enum Status {
+  AVAILABLE
+  OUT_OF_STOCK
+  LOW_STOCK
+  DISCONTINUED
+}

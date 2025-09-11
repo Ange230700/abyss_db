@@ -1,0 +1,4 @@
+# abyss_db\.husky\pre-commit
+
+echo "🔧 pre-commit: running lint-staged in $(basename "$(git rev-parse --show-toplevel)")"
+npx lint-staged

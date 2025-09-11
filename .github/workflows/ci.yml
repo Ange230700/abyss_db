@@ -1,0 +1,39 @@
+# abyss_db\.github\workflows\ci.yml
+
+name: CI
+
+on:
+  push: { branches: [main, develop] }
+  pull_request: { branches: [main, develop] }
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: abyss_db
+        ports: ["3330:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=30
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3330/abyss_db
+      NODE_ENV: test
+      SKIP_CLEANUP: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci --workspace=abyss_db
+      - working-directory: abyss_db
+        run: |
+          npx prisma db push
+          npm run prisma:seed:soft
+          npm test -- --runInBand

@@ -1,0 +1,15 @@
+# abyss_db\.gitignore
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.env
+.env.test
+.env.prod
+.eslintcache
+coverage
+generated
+tsconfig.tsbuildinfo
+.github/instructions/nx.instructions.md
