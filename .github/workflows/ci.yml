@@ -1,5 +1,4 @@
-# abyss_db\.github\workflows\ci.yml
-
+# abyss_db/.github/workflows/ci.yml
 name: CI
 
 on:
@@ -9,6 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
       mysql:
         image: mysql:8.0
@@ -21,19 +21,43 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=30
+
     env:
       DATABASE_URL: mysql://root:root@127.0.0.1:3330/abyss_db
       NODE_ENV: test
       SKIP_CLEANUP: true
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        # This repo is abyss_db itself; no need to pull submodules here
         with:
-          submodules: true
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm ci
-      - working-directory: abyss_db
-        run: |
-          npx prisma db push
-          npm run prisma:seed:soft
-          npm test -- --runInBand
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Prepare DB schema
+        run: npx prisma db push
+
+      # Choose ONE of these two seeding steps:
+
+      # Option A: simple seed, no cleanup (because SKIP_CLEANUP=true above)
+      - name: Seed DB
+        run: npm run prisma:seed
+
+      # Option B: soft-delete seed flow (uncomment if you prefer it)
+      # - name: Seed DB (soft)
+      #   run: npm run prisma:seed:soft
+
+      - name: Run tests
+        run: npm test -- --runInBand
