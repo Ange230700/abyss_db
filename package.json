@@ -84,7 +84,7 @@
     "clean": "node -e \"const fs=require('fs');for(const p of ['dist','tsconfig.tsbuildinfo']){fs.rmSync(p,{recursive:true,force:true})}\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "npm run clean && npm run typecheck && tsc -p tsconfig.json",
-    "save:latest": "git add -A && git commit -m \"chore: save latest\" || echo \"(nothing to commit)\" && git push origin HEAD"
+    "save:latest": "git add -A && git commit -m \"chore: save latest\" || echo \"(nothing to commit)\" && git push"
   },
   "repository": {
     "type": "git",
