@@ -1,6 +1,6 @@
 {
   "name": "abyssdb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Abyss DB toolkit (Prisma + seeds + soft-delete extensions)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -65,7 +65,6 @@
   ],
   "scripts": {
     "commit": "git-cz",
-    "postinstall": "node scripts/postinstall.mjs",
     "prepare": "husky",
     "db:up": "node scripts/db-up.mjs && node scripts/wait-for-mysql.mjs",
     "db:down": "docker compose down -v",
