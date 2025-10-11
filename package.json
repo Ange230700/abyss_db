@@ -1,6 +1,6 @@
 {
   "name": "abyssdb",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Abyss DB toolkit (Prisma + seeds + soft-delete extensions)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -59,6 +59,7 @@
     "dist/**",
     "prisma/generated/**",
     "prisma/schema.prisma",
+    "prisma/migrations/**",
     "package.json",
     "README.md",
     "LICENSE"
