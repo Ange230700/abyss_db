@@ -7,3 +7,5 @@ coverage
 .eslintcache
 **/.prisma
 .git
+**/*.log
+.env*

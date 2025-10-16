@@ -5,9 +5,11 @@ services:
     image: mysql:8.0
     container_name: abyss_mysql
     environment:
-      DATABASE_URL: "mysql://root:root@mysql:3306/abyss_db"
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: abyss_db
+      # (optional if you want a non-root app user)
+      # MYSQL_USER: app
+      # MYSQL_PASSWORD: app
     ports:
       - "3330:3306"
     healthcheck:
@@ -17,7 +19,11 @@ services:
       retries: 15
     volumes:
       - mysql_data:/var/lib/mysql
-    command: ["--default-authentication-plugin=mysql_native_password"]
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
 
 volumes:
   mysql_data:

@@ -15,7 +15,8 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": { "abyssdb/*": ["prisma/*"] },
-    "composite": true
+    "composite": true,
+    "types": ["node"]
   },
   "include": ["prisma"],
   "exclude": ["node_modules", "dist", "prisma/generated"]

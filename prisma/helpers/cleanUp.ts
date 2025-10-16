@@ -12,15 +12,15 @@ async function cleanUp() {
 
   if (cleanupMode === "hard") {
     console.log(`🧹 [${env}] Hard deleting all data...`);
-    await prisma.$transaction([
-      prisma.favorite.deleteMany({}),
-      prisma.image.deleteMany({}),
-      prisma.furniturematerial.deleteMany({}),
-      prisma.furniture.deleteMany({}),
-      prisma.user.deleteMany({}),
-      prisma.material.deleteMany({}),
-      prisma.furnituretype.deleteMany({}),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      await tx.favorite.hardDeleteMany({});
+      await tx.image.hardDeleteMany({});
+      await tx.furniturematerial.hardDeleteMany({});
+      await tx.furniture.hardDeleteMany({});
+      await tx.user.hardDeleteMany({});
+      await tx.material.hardDeleteMany({});
+      await tx.furnituretype.hardDeleteMany({});
+    });
     // Reset AUTO_INCREMENTs (ignore errors if tables missing)
     const resets = [
       "favorite",

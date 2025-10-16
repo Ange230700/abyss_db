@@ -1,4 +1,5 @@
 // scripts/wait-for-mysql.mjs
+
 // ESM script that waits for a MySQL TCP socket to be reachable.
 // Uses DATABASE_URL to infer host/port, with optional MYSQL_HOST/MYSQL_PORT overrides.
 //
@@ -26,7 +27,8 @@ function parseMysqlTarget() {
   }
 
   // Accept common Prisma/MySQL URL forms: mysql://user:pass@host:port/db?params
-  let host, port;
+  let host = "127.0.0.1",
+    port = 3306;
   try {
     const u = new URL(envUrl);
     // Protocol sanity check
@@ -36,8 +38,8 @@ function parseMysqlTarget() {
         `⚠️ DATABASE_URL protocol is "${u.protocol}". Proceeding if it's MySQL-compatible...`,
       );
     }
-    host = u.hostname || "127.0.0.1";
-    port = Number(u.port || 3306);
+    host = u.hostname || host;
+    port = Number(u.port || port);
   } catch (e) {
     // Very rare: non-standard URL; last resort: try simple parsing
     console.warn(
@@ -48,9 +50,24 @@ function parseMysqlTarget() {
     port = 3306;
   }
 
+  const prev = { host, port };
+
   // Env overrides
   if (process.env.MYSQL_HOST) host = process.env.MYSQL_HOST;
-  if (process.env.MYSQL_PORT) port = Number(process.env.MYSQL_PORT);
+  if (process.env.MYSQL_PORT) {
+    const parsed = Number(process.env.MYSQL_PORT);
+    if (Number.isFinite(parsed) && parsed > 0) port = parsed;
+  }
+
+  // Emit an explicit log only if we actually changed something
+  if (host !== prev.host || port !== prev.port) {
+    const changed = [];
+    if (host !== prev.host)
+      changed.push(`host: ${prev.host} → ${host} (MYSQL_HOST)`);
+    if (port !== prev.port)
+      changed.push(`port: ${prev.port} → ${port} (MYSQL_PORT)`);
+    console.log(`🔧 Overriding MySQL target via env — ${changed.join(", ")}`);
+  }
 
   if (!Number.isFinite(port) || port <= 0) port = 3306;
 

@@ -2,7 +2,7 @@
 
 import prisma from "abyssdb/lib/client";
 import { faker } from "@faker-js/faker";
-import argon2 from "argon2";
+import { hash } from "@node-rs/argon2";
 
 const ROLES = ["admin", "visitor", "customer", "seller"] as const;
 
@@ -17,7 +17,7 @@ async function seedUser() {
   }));
 
   const data = await Promise.all(
-    raw.map(async (u) => ({ ...u, password: await argon2.hash(u.password) })),
+    raw.map(async (u) => ({ ...u, password: await hash(u.password) })),
   );
 
   await prisma.user.createMany({ data, skipDuplicates: true });

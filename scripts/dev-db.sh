@@ -1,7 +1,6 @@
 # abyss_db\scripts\dev-db.sh
 
-#!/usr/bin/env sh
-# scripts/dev-db.sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 # ----------------------------
@@ -16,6 +15,7 @@ set -euo pipefail
 #   WAIT_DELAY_MS=2000        delay (ms) between wait attempts
 #   PUSH_RETRIES=5            prisma db push retry attempts
 #   SEED_RETRIES=3            seed retry attempts
+#   STUDIO_PORT=5555          port for Prisma Studio (with OPEN_STUDIO=true)
 #
 # CLI options:
 #   --skip-push               same as SKIP_PUSH=true
@@ -42,6 +42,7 @@ Env:
   WAIT_DELAY_MS        integer    (default: 2000)
   PUSH_RETRIES         integer    (default: 5)
   SEED_RETRIES         integer    (default: 3)
+  STUDIO_PORT          integer    (default: 5555)
 USAGE
 }
 
@@ -83,6 +84,7 @@ WAIT_RETRIES="${WAIT_RETRIES:-30}"
 WAIT_DELAY_MS="${WAIT_DELAY_MS:-2000}"
 PUSH_RETRIES="${PUSH_RETRIES:-5}"
 SEED_RETRIES="${SEED_RETRIES:-3}"
+STUDIO_PORT="${STUDIO_PORT:-5555}"
 
 # ----------------------------
 # Helpers
@@ -116,10 +118,18 @@ node scripts/wait-for-mysql.mjs
 echo "✅ MySQL is ready."
 
 # ----------------------------
-# 2) prisma db push (optional)
+# 2) Generate Prisma client & engines
+# ----------------------------
+
+echo "🧩 Ensuring Prisma client & engines are generated…"
+npx prisma generate
+
+
+# ----------------------------
+# 3) prisma db push (optional)
 # ----------------------------
 if [ "$SKIP_PUSH" != "true" ]; then
-  echo "📤 Applying schema with \`prisma db push\`…"
+  echo "📤 Applying schema with \`prisma db push\` (with retries)…"
   retry "$PUSH_RETRIES" 2 npx prisma db push
   echo "✅ Schema applied."
 else
@@ -127,7 +137,7 @@ else
 fi
 
 # ----------------------------
-# 3) Seed database (optional)
+# 4) Seed database (optional)
 # ----------------------------
 if [ "$SKIP_SEED" != "true" ]; then
   echo "🌱 Seeding database…"
@@ -138,12 +148,11 @@ else
 fi
 
 # ----------------------------
-# 4) Open Prisma Studio (optional)
+# 5) Open Prisma Studio (optional)
 # ----------------------------
 if [ "$OPEN_STUDIO" = "true" ]; then
-  echo "🪟 Opening Prisma Studio… (Ctrl+C to stop)"
-  exec npx prisma studio
+  echo "🪟 Opening Prisma Studio on port ${STUDIO_PORT}… (Ctrl+C to stop)"
+  exec npx prisma studio --port "$STUDIO_PORT"
 fi
 
 echo "🎉 DB ready for development."
-

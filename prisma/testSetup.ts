@@ -1,10 +1,14 @@
 // abyss_db/prisma/testSetup.ts
+
 import { execSync } from "node:child_process";
 import net from "node:net";
+import path from "node:path";
 
 /**
  * Wait until MySQL is reachable and then push the schema.
  * Throws with a clear message if Docker Compose isn't running.
+ *
+ * Honors PRISMA_SCHEMA if provided (e.g., "apps/api/prisma/schema.prisma").
  */
 export default async function globalSetup() {
   const dbUrl = process.env.DATABASE_URL;
@@ -13,6 +17,15 @@ export default async function globalSetup() {
       "❌ DATABASE_URL is not set for tests. Did you export it or load .env?",
     );
   }
+
+  // Optional schema override
+  const schemaArg = (() => {
+    const p = process.env.PRISMA_SCHEMA?.trim();
+    if (!p) return "";
+    // Normalize for cross-platform and quote path-with-spaces
+    const abs = path.resolve(p);
+    return ` --schema "${abs}"`;
+  })();
 
   let host = "127.0.0.1";
   let port = 3306;
@@ -39,9 +52,7 @@ export default async function globalSetup() {
         socket.end();
         resolve(true);
       });
-      socket.once("error", () => {
-        resolve(false);
-      });
+      socket.once("error", () => resolve(false));
       socket.setTimeout(1000, () => {
         socket.destroy();
         resolve(false);
@@ -51,7 +62,11 @@ export default async function globalSetup() {
     if (ok) {
       console.log(`✅ MySQL is reachable (attempt ${i}/${maxRetries})`);
       try {
-        execSync("npx prisma db push", { stdio: "inherit" });
+        // Use schema override if present
+        execSync(`npx prisma db push${schemaArg}`, {
+          stdio: "inherit",
+          env: process.env,
+        });
         return;
       } catch (err) {
         console.error("❌ prisma db push failed:", err);

@@ -14,6 +14,10 @@ COPY . .
 # Generate Prisma client (needs dev deps available)
 RUN npx prisma generate
 
+RUN npm prune --omit=dev
+
+RUN apk add --no-cache bash
+
 # Ensure scripts are executable
 RUN chmod +x ./scripts/dev-db.sh
 
@@ -24,18 +28,12 @@ WORKDIR /app
 # Prisma engines need these on Alpine
 RUN apk add --no-cache libc6-compat openssl
 
-# Default to dev (you can override at runtime)
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 
 # Bring in built app, node_modules, generated Prisma client, and scripts
-COPY --from=build /app ./
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/scripts ./scripts
 
-# Optional: expose Prisma Studio (if you enable OPEN_STUDIO=true)
-EXPOSE 5555
-
-# Start the consolidated DB tooling flow:
-#  - waits for MySQL (reads DATABASE_URL, WAIT_RETRIES, WAIT_DELAY_MS)
-#  - prisma db push (unless SKIP_PUSH=true)
-#  - prisma:seed (unless SKIP_SEED=true)
-#  - optionally opens Prisma Studio (OPEN_STUDIO=true)
 CMD ["./scripts/dev-db.sh"]

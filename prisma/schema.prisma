@@ -42,6 +42,11 @@ model favorite {
   deleted_at DateTime?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+
+  // Helpful for: "all favorites of a user", toggles, cleanup
+  @@index([id_user])
+  @@index([id_furniture])
+  @@index([id_user, id_furniture])
 }
 
 model furniture {
@@ -64,6 +69,11 @@ model furniture {
   deleted_at DateTime?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+
+  // Typical filters/sorts in listings
+  @@index([id_type])
+  @@index([status])
+  @@index([price])
 }
 
 model furnituretype {
@@ -89,6 +99,9 @@ model furniturematerial {
   updated_at DateTime  @updatedAt
 
   @@unique([id_furniture, id_material])
+  // Unique on (id_furniture,id_material) already covers lookups by id_furniture alone (leftmost).
+  // Add this to speed lookups by material alone:
+  @@index([id_material])
 }
 
 model material {
